@@ -1,0 +1,14 @@
+{
+  "$schema": "https://pi.dev/schemas/models.schema.json",
+  "providers": {
+    "cliproxy": {
+      "name": "My compatible proxy",
+      "baseUrl": "http://127.0.0.1:8317/v1",
+      "api": "openai-completions",
+      "apiKey": "${CLIPROXY_API_KEY}",
+      "models": [
+        { "id": "replace-with-a-model-served-by-your-proxy" }
+      ]
+    }
+  }
+}

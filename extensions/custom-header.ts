@@ -8,9 +8,9 @@
  * To restore the built-in header: rename/delete this file and /reload.
  */
 
-import type { ExtensionAPI, Theme } from "@mariozechner/pi-coding-agent";
-import { VERSION, keyHint, rawKeyHint } from "@mariozechner/pi-coding-agent";
-import { Text } from "@mariozechner/pi-tui";
+import type { ExtensionAPI, Theme } from "@earendil-works/pi-coding-agent";
+import { VERSION, keyHint, rawKeyHint } from "@earendil-works/pi-coding-agent";
+import { truncateToWidth } from "@earendil-works/pi-tui";
 
 /**
  * Build the header text. This is what you customize.
@@ -25,21 +25,49 @@ function buildHeader(theme: Theme): string {
 	// ── Logo ──────────────────────────────────────────────
 	// Change this to whatever you want as the title line.
 
-	const ascii_art_2 = [
-		"   ███████████████████████████╗  ",
-		"   ╚══██████╔════════██████╔══╝  ",
-		"      ██████║        ██████║     ",
-		"      ██████║        ██████║     ",
-		"      ██████║        ██████║     ",
-		"      ██████║        ██████║     ",
-		"      ██████║        ██████║     ",
-		"      ██████║        ██████║     ",
-		"   ████████████╗  ████████████╗  ",
-		"   ╚═══════════╝  ╚═══════════╝  ",
-	].map(line => theme.bold(theme.fg("success", line))).join("\n");
+	// Overlaid capitals sharing vertical stems: N diagonal + H crossbar.
+	const face = [
+		"   ██████                            ██████   ",
+		"   ████████                          ██████   ",
+		"   ██████████                        ██████   ",
+		"   ██████  ████                      ██████   ",
+		"   ██████    ████                    ██████   ",
+		"   ██████      ████                  ██████   ",
+		"   ██████        ████                ██████   ",
+		"   ██████          ████              ██████   ",
+		"   ████████████████████████████████████████   ",
+		"   ████████████████████████████████████████   ",
+		"   ██████                ████        ██████   ",
+		"   ██████                  ████      ██████   ",
+		"   ██████                    ████    ██████   ",
+		"   ██████                      ████  ██████   ",
+		"   ██████                        ██████████   ",
+		"   ██████                          ████████   ",
+		"   ██████                            ██████   ",
+		"   ██████                            ██████   ",
+	];
+
+	// Extrude the silhouette down and right. The front face occludes the
+	// shaded layers, including inside the gaps between strokes.
+	const depth = 2;
+	const width = Math.max(...face.map(line => line.length)) + depth;
+	const isFace = (x: number, y: number): boolean => face[y]?.[x] === "█";
+	const monogram = Array.from({ length: face.length + depth }, (_, y) => {
+		const row = Array.from({ length: width }, (_, x) => {
+			if (isFace(x, y)) return "█";
+			for (let offset = 1; offset <= depth; offset++) {
+				if (isFace(x - offset, y - offset)) return offset === 1 ? "▓" : "░";
+			}
+			return " ";
+		}).join("");
+
+		return row.replace(/█+|[▓░]+/g, part => part[0] === "█"
+			? theme.bold(theme.fg("success", part))
+			: theme.fg("success", part));
+	}).join("\n");
 
 	const logo =
-		"\n" + ascii_art_2 + "\n\n" +
+		"\n" + monogram + "\n\n" +
 		theme.bold(theme.fg("accent", "pi")) +
 		theme.fg("dim", ` v${VERSION}`);
 
@@ -80,8 +108,8 @@ export default function (pi: ExtensionAPI) {
 		if (!ctx.hasUI) return;
 
 		ctx.ui.setHeader((_tui, theme) => ({
-			render(_width: number): string[] {
-				return buildHeader(theme).split("\n");
+			render(width: number): string[] {
+				return buildHeader(theme).split("\n").map((line) => truncateToWidth(line, width));
 			},
 			invalidate() {},
 		}));

@@ -141,7 +141,18 @@ export default function browserExtension(pi: ExtensionAPI) {
     if (!context) {
       context = await chromium.launchPersistentContext(profileDir, {
         headless,
+        userAgent:
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
         viewport: { width: 1280, height: 800 },
+      });
+      // Match the webdriver value exposed by non-automated Chrome.
+      // Apply before page scripts run on subsequent navigations and frames.
+      await context.addInitScript(() => {
+        Object.defineProperty(Navigator.prototype, "webdriver", {
+          get: () => false,
+          configurable: true,
+          enumerable: true,
+        });
       });
     }
 

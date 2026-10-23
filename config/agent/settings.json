@@ -1,0 +1,21 @@
+{
+  "$schema": "https://pi.dev/schemas/settings.schema.json",
+  "theme": "dark",
+  "defaultProjectTrust": "ask",
+  "packages": [
+    "npm:pi-web-search@1.7.0",
+    "npm:pi-web-fetch@1.1.0",
+    "local-packages/pi-interactive-subagents",
+    "local-packages/pi-observational-memory",
+    "npm:remote-pi@0.7.0",
+    "npm:pi-workbench@0.2.0",
+    "npm:pi-mcp-adapter@6.0.0"
+  ],
+  "observational-memory": {
+    "passive": true,
+    "autoPromote": false
+  },
+  "extensions": [
+    "-builtin:mcp"
+  ]
+}
